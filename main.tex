@@ -1,0 +1,164 @@
+\documentclass[12pt]{article}
+
+\usepackage{sbc-template}
+\usepackage{graphicx,url}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+
+     
+\sloppy
+
+\title{Projeto de Redes de Computadores}
+
+\author{Bruno Vieira\inst{1}, Christian Lima\inst{1}, Rafael Christ\inst{1}}
+
+
+\address{Escola Politécnica -- Universidade do Vale do Rio dos Sinos
+  (UNISINOS)\\
+  São Leopoldo -- RS -- Brasil
+  \email{\{brunopv, christianml, rschrist\}@edu.unisinos.br}
+}
+
+\begin{document} 
+
+\maketitle
+     
+\begin{resumo} 
+  Esta publicação visa apresentar os resultados de pesquisa e projeto de uma rede de computadores que compreende duas unidades de uma instituição de ensino superior. Com o objetivo de aplicar conceitos vistos em aula sobre diversos aspectos importantes do projeto de Redes de Computadores, este é o resultado prático e visa facilitar a interação entre dois até então isolados pontos de ensino da universidade.
+\end{resumo}
+
+
+\section{Introdução}
+O objetivo de projetar uma rede de computadores é possibilitar a troca de informação entre dois ou mais pontos. Além de simplesmente permitir que dois lados se comuniquem, surgem diversos pontos de atenção: garantir segurança, velocidade, estabilidade, etc. Com tantas preocupações, surge a necessidade de que haja uma atenção e pesquisa extensas durante o projeto de uma rede, seja para uma empresa pequena ou de maior escala.
+
+Neste trabalho, atuou-se com base em um "cenário-problema": o de possibilitar a integração e comunicação de diferentes setores e pontos de dois campi da Unisinos, uma instituição de ensino superior, com alta velocidade e qualidade, aplicando os conhecimentos da disciplina de Redes de Computadores, cursada pelos autores.
+
+Durante o decorrer deste artigo, serão melhores apresentadas as condições para o projeto, as decisões feitas pelos autores a respeito da infraestrutura ideal, os valores e demais configurações que a proposta rede de computadores da instituição possuirá.
+
+\section{Cenário} \label{sec:cenario}
+A instituição de ensino deseja interligar diferentes pontos de operação, divididos entre seus dois campi atuais: São Leopoldo e Porto Alegre. Em São Leopoldo, está localizada sua infraestrutura principal, que é composta pelo CPD.
+
+A Unisinos deseja conectar, primeiramente, seu CPD (Centro de Processamento de Dados) à RNP (Rede Nacional de Pesquisa), através do acesso à Internet provido pelo seu braço gaúcho, o PoP-RS. Assim, a conexão externa do CPD da instituição será garantida e estável. Em seguida, deve ser provido acesso ao restante do campus São Leopoldo (onde o CPD está localizado), para utilização por cada setor (identificados por letras, de A a M). O campus Porto Alegre deverá ter conexão à Internet, também através do PoP-RS, porém a mesma não deverá ser direta: o acesso deverá ser feito entre Porto Alegre e São Leopoldo, que então irá interconectar Porto Alegre e RNP.
+
+Ainda no campus de São Leopoldo, deverá ser provido o acesso à rede para o Diretório Central dos Estudantes (DCE). As estruturas de LANs internas aos Setores de A a M, do DCE e do campus de Porto Alegre já se encontram implantadas, cabendo a presença destes locais ao projeto apenas para a integração deles com o CPD e entre si.
+
+\section{Projeto} \label{sec:projeto}
+Nesta seção é apresentado o projeto definido para atender às necessidades da instituição.
+
+\subsection{Conexão do CPD à RNP}
+Considerou-se que a comunicação da instituição ao PoP-RS já é efetuada, e que o mesmo entrega um link dedicado, de até 1 Gigabit via fibra óptica ou cabos de par trançado. Para a entrada do link de dados ao CPD, foi adicionado um Roteador Gigabit Ethernet, que funcionará como a porta externa do campus para a Internet.
+
+Conforme especificações providas, a Unisinos possui um Sistema Autônomo, o que significa que o campus opera a nível global para roteamentos de Internet \cite{dbip}. Para isso, o Roteador irá operar com protocolo de roteamento BGP. Este dispositivo será o responsável por controlar atribuição de endereços IPv4 e IPv6.
+
+\subsection{O Centro de Processamento de Dados}
+Ainda no Centro de Processamento de Dados da instituição, existirão equipamentos dedicados à distribuição de rede para os vários pontos do campus de São Leopoldo, bem como para um link dedicado até a unidade de Porto Alegre.
+
+Com o objetivo de permitir a conexão interna com a maior velocidade possível de transferência de dados, os equipamentos abaixo do Roteador principal são voltados para comunicação no padrão 10 Gigabit Ethernet. Diretamente conectado ao Roteador através de um Patch Cord de Fibra Óptica Multimodo, está um Switch 10 GbE com 12 portas SFP, responsável pela separação das redes interna de Porto Alegre e São Leopoldo. Dele, originam-se dois links de dados: um voltado à unidade portoalegrense da universidade, e outro que permanece em São Leopoldo, e destina-se a um segundo Switch de mesmas especificações.
+
+O segundo Switch é responsável pela distribuição de conexões de fibra óptica entre o CPD e os setores. Por possuir apenas 12 portas -- das quais 1 é destinada ao Uplink com o Switch de nível hierárquico maior, detalhado anteriormente --, um terceiro Switch é instalado abaixo deste no rack, para permitir a abrangência total dos 13 setores.
+
+Ainda no segundo Switch, é aproveitada uma das portas 1GbE no padrão RJ-45 -- destinada ao uso de cabos de par trançado mais simples, ao contrário dos SFP que se destinam à fibras ópticas -- para o link do Diretório Central dos Estudantes, que será detalhado em seguida.
+
+Todos os switches operam com o protocolo de roteamento Open Shortest Path First (OSPF).
+
+\subsection{Os Setores do Campus São Leopoldo}
+Cada setor já possui sua própria infraestrutura interna de LAN. Para a conexão de cada setor ao CPD da universidade, são utilizados os já citados links de 10 Gigabits, vindos diretamente dos Switches. É utilizada fibra óptica monomodo, voltada para longas distâncias, mas que permite atingir plenamente os 10 Gigabits na pequena distância de 300 metros entre cada setor e o CPD \cite{fscommunity}.
+
+Considerou-se que, em cada setor, a LAN aceitará um conector SFP de Uplink a 10 Gigabits.
+
+\subsection{Diretório Central dos Estudantes}
+A conexão do CPD com o DCE da Unisinos foi estabelecida no padrão 1 Gigabit Ethernet. Um cabo STP (Shielded Twisted Pair) sai do switch de distribuição e chega às instalações do Diretório de Estudantes, sendo conectado à um Access Point Wi-Fi da marca Ubiquiti. O cabo utiliza o conector RJ-45.
+
+\subsection{O Campus Porto Alegre}
+Para a ligação do campus de Porto Alegre, optou-se pela construção de um link de fibra óptica dedicado às operações da universidade. Assim, foi projetada uma conexão através de fibra monomodo, de forma a permitir comunicação em longas distâncias, estendida pelos 28,3 quilômetros que separam as unidades do Vale dos Sinos e da capital gaúcha.
+
+Com uma ligação dedicada, é possível manter a confiabilidade na comunicação entre as duas unidades sem a dependência de empresas externas, e a velocidade de 10 Gigabits se aplica também à comunicação entre as duas cidades. O acesso à Internet e, por extensão, à Rede Nacional de Pesquisa (RNP) é provido ao campus da capital também através desta conexão de fibra óptica.
+
+Considerou-se que a estrutura do campus portoalegrense já comporta ao menos um Switch 10 Gigabit Ethernet em seu nível mais alto, servindo como porta de entrada para o link óptico, que utiliza conectores SFP dedicados à longa distância e velocidades mais altas.
+
+\section{Custo do Projeto} \label{sec:valores}
+Nesta seção, é apresentado o valor do projeto, bem como a discriminação dos valores de cada parte e equipamento específico.
+
+\begin{center}
+\begin{tabular}{| c | c |}
+\hline
+Centro de Processamento de Dados  & R\$ 23.052,57 \\
+Conexão com Setores               & R\$ 15.957,50 \\
+Conexão com DCE                   & R\$  1.452,79 \\
+Campus Porto Alegre               & R\$ 35.067,20 \\
+\hline
+Total                             & R\$ 75.530,06 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Centro de Processamento de Dados}
+\begin{center}
+\begin{tabular}{| c | c | c | c |}
+\hline
+Item                              & Valor Unit.  & Quant. & Valor Total   \\ [0.5ex]
+\hline
+Roteador Ubiquiti EdgeRouter      & R\$ 2.279,52 & 1      & R\$  2.279,52 \\
+Switch Ubiquiti 10 GbE            & R\$ 6.298,00 & 3      & R\$ 18.894,00 \\
+Conector SFP+                    & R\$   300,00 & 6      & R\$  1.800,00 \\
+Patch Cord Fibra Óptica Duplex 2m & R\$    26,35 & 3      & R\$     79,05 \\
+\hline
+\multicolumn{3}{| c |}{Total}                             & R\$ 23.052,57 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Conexão entre CPD e Setores}
+\begin{center}
+\begin{tabular}{| c | c | c | c |}
+\hline
+Item                               & Valor Unit.  & Quant. & Valor Total   \\ [0.5ex]
+\hline
+Bobina 300m Fibra Óptica Monomodo  & R\$   208,50 & 13     & R\$  2.710,50 \\
+Par de conectores SFP p/ Monomodo  & R\$ 1.019,00 & 13     & R\$ 13.247,00 \\
+\hline
+\multicolumn{3}{| c |}{Total}                              & R\$ 15.957,50 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Conexão entre CPD e DCE}
+\begin{center}
+\begin{tabular}{| c | c | c | c |}
+\hline
+Item                               & Valor Unit.  & Quant. & Valor Total   \\ [0.5ex]
+\hline
+Bobina 100m Cabo de Rede Cat6E STP & R\$   469,35 & 1      & R\$    469,35 \\
+Pacote 10 conectores RJ-45         & R\$    50,90 & 1      & R\$     50,90 \\
+Access Point Wi-Fi Ubiquiti        & R\$   932,54 & 1      & R\$    932,54 \\
+\hline
+\multicolumn{3}{| c |}{Total}                              & R\$  1.452,79 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Conexão entre São Leopoldo e Porto Alegre}
+\begin{center}
+\begin{tabular}{| c | c | c | c |}
+\hline
+Item                              & Valor Unit.  & Quant. & Valor Total   \\ [0.5ex]
+\hline
+Bobina 1Km Fibra Óptica Monomodo  & R\$ 1.134,94 & 30     & R\$ 34.048,20 \\
+Par de Conectores SFP             & R\$ 1.019,00 & 1      & R\$  1.019,00 \\
+\hline
+\multicolumn{3}{| c |}{Total}                             & R\$ 35.067,20 \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Conclusão} \label{sec:conclusao}
+Nesta publicação, foram abordados diversas tecnologias e padrões distintos que, combinados, atuam para proporcionar uma infraestrutura de qualidade e estável para as centenas de alunos, professores e demais funcionários de duas unidades de uma grande e conceituada instituição de ensino, situadas em duas cidades do Rio Grande do Sul.
+
+Através do desenvolvimento desta pesquisa, de âmbito técnico e comercial, foi possível obter maior esclarecimento e certeza sobre a aplicação prática de cada um dos conceitos vistos nas aulas da disciplina de Rede de Computadores, compreendendo melhor as limitações, aplicações ideais e a relação entre custo e benefício que acompanha cada opção de equipamento, material ou método.
+
+Cumpriu-se o objetivo: o resultado foi uma rede com altíssima velocidade, preparada para entregar 10 Gigabits por segundo para comunicação entre todos os setores e entre dois campi inteiros, permitindo uso expressivo de grande quantidade de informação pelos times de pesquisa, pelos estudantes e por diversas funções administrativas da universidade, que possui uma infraestrutura de rede completa, com as atuais tendências tecnológicas da área.
+
+\bibliographystyle{sbc}
+\bibliography{referencias}
+
+\end{document}
